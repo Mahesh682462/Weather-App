@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <script src="https://kit.fontawesome.com/595a890311.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            width: 200px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #searchBtn {
+            padding: 10px;
+            margin-left: 5px;
+            cursor: pointer;
+            border: none;
+            background: orange;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .location-not-found {
+            display: none;
+            color: red;
+            font-size: 18px;
+        }
+
+        .weather-body {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .weather-img {
+            width: 100px;
+        }
+
+        .temperature {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .description {
+            font-size: 1.2rem;
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .humidity, .wind {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="search-box">
+                <input type="text" placeholder="Enter your location" class="input-box">
+                <button id="searchBtn">🔍</button>
+            </div>
+        </div>
+
+        <div class="location-not-found">
+            <h1>Sorry, Location not found!!!</h1>
+        </div>
+
+        <div class="weather-body">
+            <img src="https://cdn-icons-png.flaticon.com/512/1163/1163624.png" alt="Weather Image" class="weather-img">
+
+            <div class="weather-box">
+                <p class="temperature">0 <sup>°C</sup></p>
+                <p class="description">light rain</p>
+            </div>
+
+            <div class="weather-details">
+                <div class="humidity">
+                    <i class="fa-sharp fa-solid fa-droplet"></i>
+                    <div class="text">
+                        <span id="humidity">45%</span>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+
+                <div class="wind">
+                    <i class="fa-solid fa-wind"></i>
+                    <div class="text">
+                        <span id="wind-speed">12Km/H</span>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "YOUR_API_KEY"; // Get API Key from OpenWeatherMap
+        const searchBtn = document.getElementById("searchBtn");
+        const inputBox = document.querySelector(".input-box");
+        const weatherBody = document.querySelector(".weather-body");
+        const locationNotFound = document.querySelector(".location-not-found");
+        const tempElement = document.querySelector(".temperature");
+        const descElement = document.querySelector(".description");
+        const humidityElement = document.getElementById("humidity");
+        const windSpeedElement = document.getElementById("wind-speed");
+        const weatherImg = document.querySelector(".weather-img");
+
+        async function fetchWeather(city) {
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`);
+                const data = await response.json();
+
+                if (data.cod === "404") {
+                    weatherBody.style.display = "none";
+                    locationNotFound.style.display = "block";
+                    return;
+                }
+
+                locationNotFound.style.display = "none";
+                weatherBody.style.display = "flex";
+
+                tempElement.innerHTML = `${Math.round(data.main.temp)} <sup>°C</sup>`;
+                descElement.innerHTML = data.weather[0].description;
+                humidityElement.innerHTML = `${data.main.humidity}%`;
+                windSpeedElement.innerHTML = `${data.wind.speed} Km/H`;
+
+                // Change image based on weather condition
+                const weatherMain = data.weather[0].main;
+                if (weatherMain === "Clouds") {
+                    weatherImg.src = "https://cdn-icons-png.flaticon.com/512/1163/1163624.png";
+                } else if (weatherMain === "Rain") {
+                    weatherImg.src = "https://cdn-icons-png.flaticon.com/512/1146/1146858.png";
+                } else if (weatherMain === "Clear") {
+                    weatherImg.src = "https://cdn-icons-png.flaticon.com/512/869/869869.png";
+                } else {
+                    weatherImg.src = "https://cdn-icons-png.flaticon.com/512/1779/1779807.png";
+                }
+
+            } catch (error) {
+                console.log("Error fetching weather data", error);
+            }
+        }
+
+        searchBtn.addEventListener("click", () => {
+            const city = inputBox.value.trim();
+            if (city !== "") {
+                fetchWeather(city);
+            }
+        });
+
+        inputBox.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                searchBtn.click();
+            }
+        });
+    </script>
+
+</body>
+</html>
